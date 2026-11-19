@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>만두 만들기</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&family=Jua&display=swap" rel="stylesheet" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥟</text></svg>" />
+  </head>
+  <body>
+    <main>
+      <canvas id="stage"></canvas>
+      <div id="overlay">
+        <p id="status">불러오는 중...</p>
+        <button id="start" hidden>▶ 시작하기</button>
+      </div>
+      <button id="mute" hidden title="소리 켜기/끄기">🔊</button>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
