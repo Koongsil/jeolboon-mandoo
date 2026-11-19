@@ -26,12 +26,14 @@ function fit() {
   canvas.style.height = `${Math.floor(w / ar)}px`;
 }
 
+let failed = false;
+
 async function boot() {
   fit();
   const assets = new Assets(base);
   const sound = new Sound();
   await Promise.all([
-    assets.load(data, (d, t) => { status.textContent = `불러오는 중... ${Math.round((d / t) * 100)}%`; }),
+    assets.load(data, (d, t) => { if (!failed) status.textContent = `불러오는 중... ${Math.round((d / t) * 100)}%`; }),
     sound.load(data, base),
   ]);
   await applyIngredientMod(data, assets, base);
@@ -57,6 +59,7 @@ async function boot() {
 }
 
 boot().catch((e) => {
+  failed = true; // 다른 로딩 작업이 진행률로 오류 메시지를 덮어쓰지 않도록
   console.error(e);
   status.textContent = '불러오기 실패: ' + e.message;
 });

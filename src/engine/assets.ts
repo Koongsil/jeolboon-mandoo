@@ -14,7 +14,7 @@ export class Assets {
     const jobs: (() => Promise<void>)[] = [];
     for (const [id, c] of Object.entries(data.chars)) {
       if (c.type === 'shape' || c.type === 'text') {
-        jobs.push(async () => { this.images.set(id, await loadImage(this.base + c.src)); });
+        jobs.push(async () => { this.images.set(id, await loadSvg(this.base + c.src)); });
       } else if (c.type === 'morph') {
         jobs.push(async () => {
           const text = await (await fetch(this.base + c.src)).text();
@@ -122,6 +122,34 @@ export class Assets {
     }
     if (px < 0 || py < 0 || px >= d.width || py >= d.height) return false;
     return d.data[(py * d.width + px) * 4 + 3] > 0;
+  }
+}
+
+/**
+ * Load an SVG as an image. Safari/WebKit rejects SVGs whose width or height rounds to 0px
+ * (e.g. a 0.25px-wide sliver), so on failure retry with a viewBox and at least 1px size.
+ * The raster step stretches the image to the graphic's bounds, so the intrinsic size doesn't matter.
+ */
+async function loadSvg(url: string): Promise<HTMLImageElement> {
+  try {
+    return await loadImage(url);
+  } catch (e) {
+    const text = await (await fetch(url)).text();
+    const fixed = text.replace(/<svg\b([^>]*)>/, (tag, attrs: string) => {
+      const num = (name: string) => Number(attrs.match(new RegExp(`\\s${name}="([\\d.]+)(?:px)?"`))?.[1] ?? 0);
+      const w = num('width');
+      const h = num('height');
+      if (/\sviewBox=/.test(attrs) || !(w > 0 || h > 0)) return tag;
+      const rest = attrs.replace(/\s(width|height)="[^"]*"/g, '');
+      return `<svg${rest} width="${Math.max(1, w)}px" height="${Math.max(1, h)}px" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">`;
+    });
+    if (fixed === text) throw e;
+    const blob = URL.createObjectURL(new Blob([fixed], { type: 'image/svg+xml' }));
+    try {
+      return await loadImage(blob);
+    } finally {
+      URL.revokeObjectURL(blob);
+    }
   }
 }
 
